@@ -183,6 +183,9 @@ class SC2Casts:
 		paramsFinal = {}
 		for value in splitParams:
 			splitParams = value.split('=')
+			# sometime we get just a type without content (why???); check for this and ignore
+			if len(splitParams) != 2:
+				continue
 			type = splitParams[0]
 			content = splitParams[1]
 			if type == 'url':
