@@ -1,6 +1,9 @@
 import urllib, urllib2, re, sys, os
 import xbmc, xbmcaddon, xbmcgui, xbmcplugin
 
+def log(msg):
+    print msg
+
 ###################################
 ########  Class SC2Casts  #########
 ###################################
@@ -153,12 +156,18 @@ class SC2Casts:
 
     def showGames(self, params = {}):
         get = params.get
-        link = self.getRequest('http://sc2casts.com'+get("url"))
+        request = 'http://sc2casts.com'+get("url")
+        log('request = ' + request)
+        link = self.getRequest(request)
+        #log('link = ' + link)
         matchCount = re.compile('<div id="g(.+?)"(.+?)</div></div>').findall(link)
+        log('matchCount = ' + str(matchCount))
+
+        youtubeLinksRe = re.compile('src="https?://www.youtube.com/embed/(.+?)"')
 
         if len(matchCount) > 0:
             for i in range(len(matchCount)):
-                videoContent=re.compile('<param name="movie" value="http://www.youtube.com/v/(.+?)\?.+?"></param>').findall(matchCount[i][1])
+                videoContent = youtubeLinksRe.findall(matchCount[i][1])
                 if len(videoContent) == 0:
                     self.addVideo('Game '+ str(i+1), 'fillUp')
                 if len(videoContent) == 1:
@@ -167,7 +176,8 @@ class SC2Casts:
                     for k in range(len(videoContent)):
                         self.addVideo('Game '+ str(i+1)+', part '+ str(k+1), videoContent[k])
         else:
-            videoContent=re.compile('<param name="movie" value="http://www.youtube.com/v/(.+?)\?.+?"></param>').findall(link)
+            videoContent = youtubeLinksRe.findall(link)
+            log('videoContent = ' + str(videoContent))
             if len(videoContent) > 1:
                 for n in range(len(videoContent)):
                     self.addVideo('Game 1, part '+ str(n+1), videoContent[n])
