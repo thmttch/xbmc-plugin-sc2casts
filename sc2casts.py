@@ -1,5 +1,7 @@
 import urllib, urllib2, re, sys, os
 import xbmc, xbmcaddon, xbmcgui, xbmcplugin
+from bs4 import BeautifulSoup
+import requests as rr
 
 def log(msg):
     print msg
@@ -15,6 +17,7 @@ class SC2Casts:
     __language__ = __settings__.getLocalizedString
 
     def action(self, params):
+        log('action.params = ' + str(params))
         get = params.get
         if (get("action") == "rootTop"):
             self.rootTop()
@@ -112,6 +115,7 @@ class SC2Casts:
             keyboard.doModal()
             url = 'http://sc2casts.com/?q='+keyboard.getText()
         link = self.getRequest(url)
+        log('link = ' + str(link))
 
         # Get settings
         boolMatchup = self.__settings__.getSetting( "matchup" )
@@ -124,8 +128,11 @@ class SC2Casts:
         caster = re.compile('<a href="/.+?"><span class="caster_name">(.*?)</span></a>').findall(link)
         matchup = re.compile('<span style="color:#cccccc">(.*?)</span>').findall(link)
         roundname = re.compile('<span class="round_name">(.*?)</span>').findall(link)
+        #checkSource = re.compile('<span class="source_name">(.*?)</span>').findall(link)
+        # this span no longer exists, use the img icon as a proxy
         checkSource = re.compile('<span class="source_name">(.*?)</span>').findall(link)
         event = re.compile('<span class="event_name".*?>(.*?)</span>').findall(link)
+        log('checkSource = ' + str(checkSource))
 
         #Different source if URL is .../top
         if get("action") == 'showTitlesTop':
@@ -133,6 +140,7 @@ class SC2Casts:
         else:
             title = re.compile('<h2><a href="(.+?)"><b >(.+?)</b> vs <b >(.+?)</b> \((.*?)\)</a>').findall(link)
 
+        log('event = ' + str(event))
         for i in range(len(event)):
             if checkSource[i] != '@ YouTube':
                 pass
