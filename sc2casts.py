@@ -1,5 +1,14 @@
+#activate_this = xbmc.translatePath('./venv/bin/activate_this.py')
+#activate_this = xbmc.translatePath('~/.xbmc/addons/plugin.video.sc2casts/venv/bin/activate_this.py')
+#activate_this = xbmc.translatePath('/home/pvg/.xbmc/addons/plugin.video.sc2casts/venv/bin/activate_this.py')
+activate_this = '/home/pvg/.xbmc/addons/plugin.video.sc2casts/venv/bin/activate_this.py'
+#log(activate_this)
+execfile(activate_this, dict(__file__=activate_this))
+
 import urllib, urllib2, re, sys, os
 import xbmc, xbmcaddon, xbmcgui, xbmcplugin
+import virtualenv
+
 from bs4 import BeautifulSoup
 import requests as rr
 
@@ -31,6 +40,7 @@ class SC2Casts:
             self.browseCasters(params)
         if (get("action") == "showTitles" or get("action") == "showTitlesTop" or get("action") == "showTitlesSearch"):
             self.showTitles(params)
+            #self.showTitles2(params)
         if (get("action") == "showGames"):
             self.showGames(params)
 
@@ -115,7 +125,9 @@ class SC2Casts:
             keyboard.doModal()
             url = 'http://sc2casts.com/?q='+keyboard.getText()
         link = self.getRequest(url)
-        log('link = ' + str(link))
+        soup = BeautifulSoup(link)
+        #log('link = ' + str(link))
+        log('soup = ' + str(soup))
 
         # Get settings
         boolMatchup = self.__settings__.getSetting( "matchup" )
@@ -130,9 +142,11 @@ class SC2Casts:
         roundname = re.compile('<span class="round_name">(.*?)</span>').findall(link)
         #checkSource = re.compile('<span class="source_name">(.*?)</span>').findall(link)
         # this span no longer exists, use the img icon as a proxy
-        checkSource = re.compile('<span class="source_name">(.*?)</span>').findall(link)
+        #checkSource = re.compile('<span class="source_name">(.*?)</span>').findall(link)
+        checkSource = [ div.img['alt'] for div in soup.find_all('div', class_='latest_series') ]
         event = re.compile('<span class="event_name".*?>(.*?)</span>').findall(link)
-        log('checkSource = ' + str(checkSource))
+        log('checkSource = ' + str(len(checkSource)))
+        log('event = ' + str(len(event)))
 
         #Different source if URL is .../top
         if get("action") == 'showTitlesTop':
@@ -140,9 +154,10 @@ class SC2Casts:
         else:
             title = re.compile('<h2><a href="(.+?)"><b >(.+?)</b> vs <b >(.+?)</b> \((.*?)\)</a>').findall(link)
 
-        log('event = ' + str(event))
+        #log('event = ' + str(event))
         for i in range(len(event)):
-            if checkSource[i] != '@ YouTube':
+            #if checkSource[i] != '@ YouTube':
+            if 'YouTube' in checkSource[i]:
                 pass
             else:
                 url = ''
