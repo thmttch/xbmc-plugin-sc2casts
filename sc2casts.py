@@ -154,47 +154,57 @@ class SC2Casts:
         else:
             title = re.compile('<h2><a href="(.+?)"><b >(.+?)</b> vs <b >(.+?)</b> \((.*?)\)</a>').findall(link)
 
-        #log('event = ' + str(event))
         for i in range(len(event)):
+            log('event = ' + str(event[i]))
+            log('checkSource = ' + str(checkSource[i]))
             #if checkSource[i] != '@ YouTube':
-            if 'YouTube' in checkSource[i]:
-                pass
-            else:
-                url = ''
-                if boolMatchup == 'true':
-                    url += matchup[i] + ' | '
+            if 'YouTube' not in checkSource[i]:
+                continue
 
-                url += title[i][1] + ' vs ' + title[i][2] + ' | '
+            url = ''
+            if boolMatchup == 'true':
+                url += matchup[i] + ' | '
 
-                if boolNr_games == 'true':
-                    url += title[i][3] + ' | '
-                if boolEvent == 'true':
-                    url += event[i] + ' | '
-                if boolRound == 'true':
-                    url += roundname[i] + ' | '
-                if boolCaster == 'true':
-                    url += 'cast by: ' + caster[i]
+            url += title[i][1] + ' vs ' + title[i][2] + ' | '
 
-                self.addCategory(url,title[i][0],'showGames')
+            if boolNr_games == 'true':
+                url += title[i][3] + ' | '
+            if boolEvent == 'true':
+                url += event[i] + ' | '
+            if boolRound == 'true':
+                url += roundname[i] + ' | '
+            if boolCaster == 'true':
+                url += 'cast by: ' + caster[i]
+
+            self.addCategory(url,title[i][0],'showGames')
 
     def showGames(self, params = {}):
         get = params.get
         request = 'http://sc2casts.com'+get("url")
         log('request = ' + request)
         link = self.getRequest(request)
+        soup = BeautifulSoup(link)
         #log('link = ' + link)
         matchCount = re.compile('<div id="g(.+?)"(.+?)</div></div>').findall(link)
+        matchLinks = [ e['src'] for e in soup.find_all('iframe') ]
         log('matchCount = ' + str(matchCount))
 
         youtubeLinksRe = re.compile('src="https?://www.youtube.com/embed/(.+?)"')
 
-        if len(matchCount) > 0:
-            for i in range(len(matchCount)):
-                videoContent = youtubeLinksRe.findall(matchCount[i][1])
+        #if len(matchCount) > 0:
+        log('matchLinks = ' + str(len(matchLinks)))
+        if len(matchLinks) > 0:
+            #for i in range(len(matchCount)):
+            for i in range(len(matchLinks)):
+                #videoContent = youtubeLinksRe.findall(matchCount[i][1])
+                # this is really video number
+                #videoContent = youtubeLinksRe.findall(matchCount[i][1])
+                videoContent = str(i)
                 if len(videoContent) == 0:
                     self.addVideo('Game '+ str(i+1), 'fillUp')
                 if len(videoContent) == 1:
-                    self.addVideo('Game '+ str(i+1), videoContent[0])
+                    #self.addVideo('Game '+ str(i+1), videoContent[0])
+                    self.addVideo('Game '+ str(i+1), videoContent)
                 if len(videoContent) > 1:
                     for k in range(len(videoContent)):
                         self.addVideo('Game '+ str(i+1)+', part '+ str(k+1), videoContent[k])
