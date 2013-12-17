@@ -10,7 +10,7 @@ import xbmc, xbmcaddon, xbmcgui, xbmcplugin
 import virtualenv
 
 from bs4 import BeautifulSoup
-import requests as rr
+#import requests as rr
 
 def log(msg):
     print msg
@@ -178,14 +178,18 @@ class SC2Casts:
 
             self.addCategory(url,title[i][0],'showGames')
 
-    def showGames(self, params = {}):
+    '''
+    # calls self.addVideo('title', '')
+    def showGames_original(self, params = {}):
         get = params.get
         request = 'http://sc2casts.com'+get("url")
         log('request = ' + request)
         link = self.getRequest(request)
         soup = BeautifulSoup(link)
         #log('link = ' + link)
+        # find divs with id='g1', id='g2', etc
         matchCount = re.compile('<div id="g(.+?)"(.+?)</div></div>').findall(link)
+        #matchLinks = [ e['src'] for e in soup.find_all('iframe') ]
         matchLinks = [ e['src'] for e in soup.find_all('iframe') ]
         log('matchCount = ' + str(matchCount))
 
@@ -216,6 +220,81 @@ class SC2Casts:
                     self.addVideo('Game 1, part '+ str(n+1), videoContent[n])
             else:
                 self.addVideo('Game 1', videoContent[0])
+    '''
+
+    def showGames(self, params = {}):
+        get = params.get
+        request = 'http://sc2casts.com'+get("url")
+        #log('request = ' + request)
+        link = self.getRequest(request)
+        soup = BeautifulSoup(link)
+        #log('link = ' + link)
+        # find divs with id='g1', id='g2', etc
+        #matchCount = re.compile('<div id="g(.+?)"(.+?)</div></div>').findall(link)
+        #matchLinks = [ e['src'] for e in soup.find_all('iframe') ]
+        matchLinks = [ e['src'] for e in soup.find_all('iframe') ]
+        #log('matchCount = ' + str(matchCount))
+
+        #youtubeLinksRe = re.compile('src="https?://www.youtube.com/embed/(.+?)"')
+
+        #gameDivs = soup.find_all(name='div', id=re.compile('g*'))
+        #gameDivs = soup.find_all(name='div', id=re.compile('^g*$'))
+        gameDivs = soup.find_all(name='div', id=re.compile('g.*'))
+        log('# gameDivs = ' + str(len(gameDivs)))
+
+        # if it's only 1 game
+        if len(gameDivs) == 0:
+            iframe = soup.find(id='ytplayer')
+            game_title = 'Game 1'
+            game_url = iframe['src']
+            game_id = game_url.rsplit('/', 1)[-1]
+
+            self.addVideo(game_title, game_id)
+
+        # if there's more than 1 game
+        for i, g in enumerate(gameDivs):
+            log(g)
+            #log(g.contents)
+            log(g.iframe['src'])
+
+            game_title = 'Game ' + str(i + 1)
+            game_url = g.iframe['src']
+            game_id = game_url.rsplit('/', 1)[-1]
+            log(game_id)
+
+            log('title, url, id = ' + game_title + ', ' + game_url + ', ' + game_id)
+            #break
+
+            self.addVideo(game_title, game_id)
+
+        '''
+        #if len(matchCount) > 0:
+        log('matchLinks = ' + str(len(matchLinks)))
+        if len(matchLinks) > 0:
+            #for i in range(len(matchCount)):
+            for i in range(len(matchLinks)):
+                #videoContent = youtubeLinksRe.findall(matchCount[i][1])
+                # this is really video number
+                #videoContent = youtubeLinksRe.findall(matchCount[i][1])
+                videoContent = str(i)
+                if len(videoContent) == 0:
+                    self.addVideo('Game '+ str(i+1), 'fillUp')
+                if len(videoContent) == 1:
+                    #self.addVideo('Game '+ str(i+1), videoContent[0])
+                    self.addVideo('Game '+ str(i+1), videoContent)
+                if len(videoContent) > 1:
+                    for k in range(len(videoContent)):
+                        self.addVideo('Game '+ str(i+1)+', part '+ str(k+1), videoContent[k])
+        else:
+            videoContent = youtubeLinksRe.findall(link)
+            log('videoContent = ' + str(videoContent))
+            if len(videoContent) > 1:
+                for n in range(len(videoContent)):
+                    self.addVideo('Game 1, part '+ str(n+1), videoContent[n])
+            else:
+                self.addVideo('Game 1', videoContent[0])
+        '''
+
 
 
     # ------------------------------------- Data functions ------------------------------------- #
