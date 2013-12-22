@@ -253,19 +253,27 @@ class SC2Casts:
 
         # if there's more than 1 game
         for i, g in enumerate(gameDivs):
-            log(g)
+            log('game div tag: ' + str(g))
             #log(g.contents)
-            log(g.iframe['src'])
 
+            # if it doesn't have an iframe, game not played or casted
             game_title = 'Game ' + str(i + 1)
-            game_url = g.iframe['src']
-            game_id = game_url.rsplit('/', 1)[-1]
-            log(game_id)
+            if g.iframe:
+                log(g.iframe['src'])
 
-            log('title, url, id = ' + game_title + ', ' + game_url + ', ' + game_id)
-            #break
+                game_url = g.iframe['src']
+                game_id = game_url.rsplit('/', 1)[-1]
+                log(game_id)
 
-            self.addVideo(game_title, game_id)
+                log('title, url, id = ' + game_title + ', ' + game_url + ', ' + game_id)
+                #break
+
+                self.addVideo(game_title, game_id)
+            else:
+                # TODO how to send an ui alert of something
+                log('Game not played or casted yet.')
+                game_id = ''
+                self.addVideo(game_title, game_id)
 
         '''
         #if len(matchCount) > 0:
