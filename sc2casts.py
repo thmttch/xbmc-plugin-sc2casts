@@ -1,6 +1,7 @@
 #activate_this = xbmc.translatePath('./venv/bin/activate_this.py')
 #activate_this = xbmc.translatePath('~/.xbmc/addons/plugin.video.sc2casts/venv/bin/activate_this.py')
 #activate_this = xbmc.translatePath('/home/pvg/.xbmc/addons/plugin.video.sc2casts/venv/bin/activate_this.py')
+
 activate_this = '/home/pvg/.xbmc/addons/plugin.video.sc2casts/venv/bin/activate_this.py'
 #log(activate_this)
 execfile(activate_this, dict(__file__=activate_this))
@@ -9,8 +10,9 @@ import urllib, urllib2, re, sys, os
 import xbmc, xbmcaddon, xbmcgui, xbmcplugin
 import virtualenv
 
-from bs4 import BeautifulSoup
+#from bs4 import BeautifulSoup
 #import requests as rr
+from sc2casts_parser import SC2CastsParser
 
 def log(msg):
     print msg
@@ -24,6 +26,8 @@ class SC2Casts:
     USERAGENT = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-GB; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8"
     __settings__ = xbmcaddon.Addon(id='plugin.video.sc2casts')
     __language__ = __settings__.getLocalizedString
+
+    parser = SC2CastsParser()
 
     def action(self, params):
         log('action.params = ' + str(params))
@@ -225,6 +229,15 @@ class SC2Casts:
     def showGames(self, params = {}):
         get = params.get
         request = 'http://sc2casts.com'+get("url")
+        content = self.getRequest(request)
+        games = self.parser(content)
+
+        for game in games:
+            self.addVideo(game['game_title'], game['game_id'])
+
+        '''
+        get = params.get
+        request = 'http://sc2casts.com'+get("url")
         #log('request = ' + request)
         link = self.getRequest(request)
         soup = BeautifulSoup(link)
@@ -274,6 +287,7 @@ class SC2Casts:
                 log('Game not played or casted yet.')
                 game_id = ''
                 self.addVideo(game_title, game_id)
+        '''
 
         '''
         #if len(matchCount) > 0:
@@ -330,4 +344,3 @@ class SC2Casts:
         link=response.read()
         response.close()
         return link
-
