@@ -10,7 +10,7 @@ import urllib, urllib2, re, sys, os
 import xbmc, xbmcaddon, xbmcgui, xbmcplugin
 import virtualenv
 
-#from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup
 #import requests as rr
 from sc2casts_parser import SC2CastsParser
 
