@@ -28,6 +28,7 @@ class SC2Casts:
     __language__ = __settings__.getLocalizedString
 
     parser = SC2CastsParser()
+    client = SC2CastsClient()
 
     def action(self, params):
         log('action.params = ' + str(params))
@@ -74,12 +75,15 @@ class SC2Casts:
 
     # display the browse events menu
     def browseEvents(self, params = {}):
-        get = params.get
-        link = self.getRequest(get("url"))
-        event = re.compile('<a href="/event(.*?)">(.*?)</a>').findall(link)
+        #get = params.get
+        #link = self.getRequest(get("url"))
+        #content = self.getRequest(get("url"))
+        #event = re.compile('<a href="/event(.*?)">(.*?)</a>').findall(link)
 
-        for i in range(len(event)):
-            self.addCategory(event[i][1], 'http://sc2casts.com/event'+event[i][0], 'showTitles')
+        #for i in range(len(event)):
+            #self.addCategory(event[i][1], 'http://sc2casts.com/event'+event[i][0], 'showTitles')
+        for category in self.client.events():
+            self.addCategory(category['desc'], 'http://sc2casts.com' + category['path'], 'showTitles')
 
     # display the browse casters menu
     def browseMatchups(self):
@@ -89,17 +93,19 @@ class SC2Casts:
         #self.addCategory('PvP', 'http://sc2casts.com/matchups-PvP', 'showTitles')
         #self.addCategory('TvT', 'http://sc2casts.com/matchups-TvT', 'showTitles')
         #self.addCategory('ZvZ', 'http://sc2casts.com/matchups-ZvZ', 'showTitles')
-        for category in parser.matchups():
-            self.addCategory(category['description'], 'http://sc2casts.com/' + category['path'], 'showTitles')
+        for category in self.client.matchups():
+            self.addCategory(category['desc'], 'http://sc2casts.com/' + category['path'], 'showTitles')
 
     # display the browse casters menu
     def browseCasters(self, params = {}):
-        get = params.get
-        link = self.getRequest(get("url"))
-        caster = re.compile('<a href="/caster(.*?)">(.*?)</a>').findall(link)
+        #get = params.get
+        #link = self.getRequest(get("url"))
+        #caster = re.compile('<a href="/caster(.*?)">(.*?)</a>').findall(link)
 
-        for i in range(len(caster)):
-            self.addCategory(caster[i][1], 'http://sc2casts.com/caster'+caster[i][0], 'showTitles', len(caster))
+        #for i in range(len(caster)):
+            #self.addCategory(caster[i][1], 'http://sc2casts.com/caster'+caster[i][0], 'showTitles', len(caster))
+        for category in self.client.casters():
+            self.addCategory(category['desc'], 'http://sc2casts.com' + category['path'], 'showTitles')
 
 
     # ------------------------------------- Add functions ------------------------------------- #

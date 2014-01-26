@@ -2,27 +2,10 @@
 
 import re
 from bs4 import BeautifulSoup
+import requests
 
+# ONLY does parsing; use something else to get the URL and pass it in as an html string
 class SC2CastsParser:
-
-    # list of sub-categories, meant to be used like <HOST> + "/" + result
-    #
-    # out: [
-    # {
-    #   description: PvZ, ZvT, etc
-    #   path: path to append to HOST
-    # },
-    # ...
-    # ]
-    def matchups(self):
-        return [
-            { 'description': 'PvZ', 'path': 'matchups-PvZ' },
-            { 'description': 'PvT', 'path': 'matchups-PvT' },
-            { 'description': 'TvZ', 'path': 'matchups-TvZ' },
-            { 'description': 'PvP', 'path': 'matchups-PvP' },
-            { 'description': 'TvT', 'path': 'matchups-TvT' },
-            { 'description': 'ZvZ', 'path': 'matchups-ZvZ' },
-        ]
 
     # out: [
     # {
@@ -279,5 +262,150 @@ class SC2CastsParser:
 
         return results
 
+    # out: [
+    # {
+    #   desc: string,
+    #   path: string,
+    # },
+    # ...
+    # ]
+    # TODO split into prominent and all?
+    def casters(self, html):
+        results = [ ]
+
+        soup = BeautifulSoup(html)
+
+        # there are 4 'valign=top' fields:
+        # 0: prominent and all events
+        # 1: notable and all events
+        # 2: prominent and all casters
+        # 3: matchup
+        content_div = soup.find_all('td', attrs={ 'valign': 'top' })[2]
+        #print content_div
+
+        for anchor in content_div.find_all('a'):
+            #print anchor
+            results.append({
+                'desc': anchor.string,
+                'path': anchor['href'],
+            })
+
+        return results
+
+    # out: [
+    # {
+    #   desc: string,
+    #   path: string,
+    # },
+    # ...
+    # ]
+    # TODO split into prominent and all?
+    def events(self, html):
+        results = [ ]
+
+        for anchor in self._browse_page_sections(html, 'events').find_all('a'):
+            #print anchor
+            results.append({
+                'desc': anchor.string,
+                'path': anchor['href'],
+            })
+
+        return results
+
+    # out: [
+    # {
+    #   desc: string,
+    #   path: string,
+    # },
+    # ...
+    # ]
+    # TODO split into prominent and all?
+    def casters(self, html):
+        results = [ ]
+
+        for anchor in self._browse_page_sections(html, 'casters').find_all('a'):
+            #print anchor
+            results.append({
+                'desc': anchor.string,
+                'path': anchor['href'],
+            })
+
+        return results
+
+    # list of sub-categories, meant to be used like <HOST> + "/" + result
+    #
+    # out: [
+    # {
+    #   desc: PvZ, ZvT, etc
+    #   path: path to append to HOST
+    # },
+    # ...
+    # ]
+    def matchups(self, html):
+        #return [
+            #{ 'description': 'PvZ', 'path': 'matchups-PvZ' },
+            #{ 'description': 'PvT', 'path': 'matchups-PvT' },
+            #{ 'description': 'TvZ', 'path': 'matchups-TvZ' },
+            #{ 'description': 'PvP', 'path': 'matchups-PvP' },
+            #{ 'description': 'TvT', 'path': 'matchups-TvT' },
+            #{ 'description': 'ZvZ', 'path': 'matchups-ZvZ' },
+        #]
+        results = [ ]
+
+        for anchor in self._browse_page_sections(html, 'matchups').find_all('a'):
+            #print anchor
+            results.append({
+                'desc': anchor.string,
+                'path': anchor['href'],
+            })
+
+        return results
+
+
+    # in: a section name; there are 4 'valign=top' fields:
+    # events: prominent and all events
+    # players: notable and all players
+    # casters: prominent and all casters
+    # matchups: matchups
+    #
+    # out: the `td` tag containing the given section
+    def _browse_page_sections(self, browse_page_html, section_name):
+        soup = BeautifulSoup(browse_page_html)
+
+        section_id = {
+            'events': 0,
+            'players': 1,
+            'casters': 2,
+            'matchups': 3,
+        }[section_name]
+
+        content_div = soup.find_all('td', attrs={ 'valign': 'top' })[section_id]
+        return content_div
+
+
     def log(self, msg):
         print msg
+
+class SC2CastsClient:
+
+    HOST = 'http://sc2casts.com'
+    PATH_BROWSE = '/browse'
+    PATH_ALL = '/all'
+
+    parser = SC2CastsParser()
+
+    #@classmethod
+    def events(self):
+        html = requests.get(self.HOST + self.PATH_BROWSE).text
+        return self.parser.events(html)
+
+    #@classmethod
+    def matchups(self):
+        html = requests.get(self.HOST + self.PATH_BROWSE).text
+        return self.parser.matchups(html)
+
+    #@classmethod
+    def casters(self):
+        html = requests.get(self.HOST + self.PATH_BROWSE).text
+        return self.parser.casters(html)
+

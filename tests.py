@@ -5,15 +5,8 @@ import json
 from pprint import *
 
 parser = SC2CastsParser()
+client = SC2CastsClient()
 TEST_DATA_DIR = 'tests'
-
-# test cases:
-
-def test_matchups():
-    actual = parser.matchups()
-
-    assert len(actual) == 6
-    # TODO test that the actual URLs are still valid
 
 # test cases:
 
@@ -30,8 +23,7 @@ def test_casts():
     actual = parser.casts(test_data)
     pprint(actual)
 
-    #assert len(actual) == 6
-    # TODO test that the actual URLs are still valid
+    # TODO check each cast
 
 # test cases:
 # bo3 in 1 game
@@ -76,3 +68,38 @@ def test_games_5_games():
 
     assert actual[4]['game_id'] == ''
     assert actual[4]['game_title'] == 'Game 5'
+
+# test cases:
+
+def test_events():
+    with open(TEST_DATA_DIR + '/browse', 'r') as f:
+        test_data = f.read()
+
+    actual = parser.events(test_data)
+    pprint(actual)
+
+# test cases:
+
+def test_casters():
+    with open(TEST_DATA_DIR + '/browse', 'r') as f:
+        test_data = f.read()
+
+    actual = parser.casters(test_data)
+    pprint(actual)
+
+# test cases:
+
+def test_matchups():
+    with open(TEST_DATA_DIR + '/browse', 'r') as f:
+        test_data = f.read()
+
+    actual = parser.matchups(test_data)
+
+    assert len(actual) == 6
+    # TODO test that the actual URLs are still valid
+
+# client tests
+
+def test_client_matchups():
+    actual = client.matchups()
+    assert len(actual) == 6
