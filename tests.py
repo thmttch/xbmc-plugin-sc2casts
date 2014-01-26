@@ -2,6 +2,36 @@
 
 from sc2casts_parser import *
 import json
+from pprint import *
+
+parser = SC2CastsParser()
+TEST_DATA_DIR = 'tests'
+
+# test cases:
+
+def test_matchups():
+    actual = parser.matchups()
+
+    assert len(actual) == 6
+    # TODO test that the actual URLs are still valid
+
+# test cases:
+
+def test_titles():
+    pass
+
+# test cases:
+
+def test_casts():
+    with open(TEST_DATA_DIR + '/all', 'r') as f:
+        test_data = f.read()
+        #print test_data
+
+    actual = parser.casts(test_data)
+    pprint(actual)
+
+    #assert len(actual) == 6
+    # TODO test that the actual URLs are still valid
 
 # test cases:
 # bo3 in 1 game
@@ -9,14 +39,11 @@ import json
 # 3 games
 # 5 games
 
-TEST_DATA_DIR = 'tests'
-
 def test_games_bo3_in_1_game():
     with open(TEST_DATA_DIR + '/cast14719-Soulkey-vs-Cure-Best-of-3-All-in-1-video-IEM-Cologne-2014-Korean-Qualifier', 'r') as f:
         test_data = f.read()
         #print test_data
 
-    parser = SC2CastsParser()
     actual = parser.games(test_data)
 
     assert len(actual) == 1
@@ -30,7 +57,6 @@ def test_games_5_games():
         test_data = f.read()
         #print test_data
 
-    parser = SC2CastsParser()
     actual = parser.games(test_data)
 
     print actual

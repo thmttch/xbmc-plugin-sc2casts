@@ -48,7 +48,9 @@ class SC2Casts:
         if (get("action") == "showGames"):
             self.showGames(params)
 
+
     # ------------------------------------- Menu functions ------------------------------------- #
+
 
     # display the root menu
     def root(self):
@@ -81,12 +83,14 @@ class SC2Casts:
 
     # display the browse casters menu
     def browseMatchups(self):
-        self.addCategory('PvZ', 'http://sc2casts.com/matchups-PvZ', 'showTitles')
-        self.addCategory('PvT', 'http://sc2casts.com/matchups-PvT', 'showTitles')
-        self.addCategory('TvZ', 'http://sc2casts.com/matchups-TvZ', 'showTitles')
-        self.addCategory('PvP', 'http://sc2casts.com/matchups-PvP', 'showTitles')
-        self.addCategory('TvT', 'http://sc2casts.com/matchups-TvT', 'showTitles')
-        self.addCategory('ZvZ', 'http://sc2casts.com/matchups-ZvZ', 'showTitles')
+        #self.addCategory('PvZ', 'http://sc2casts.com/matchups-PvZ', 'showTitles')
+        #self.addCategory('PvT', 'http://sc2casts.com/matchups-PvT', 'showTitles')
+        #self.addCategory('TvZ', 'http://sc2casts.com/matchups-TvZ', 'showTitles')
+        #self.addCategory('PvP', 'http://sc2casts.com/matchups-PvP', 'showTitles')
+        #self.addCategory('TvT', 'http://sc2casts.com/matchups-TvT', 'showTitles')
+        #self.addCategory('ZvZ', 'http://sc2casts.com/matchups-ZvZ', 'showTitles')
+        for category in parser.matchups():
+            self.addCategory(category['description'], 'http://sc2casts.com/' + category['path'], 'showTitles')
 
     # display the browse casters menu
     def browseCasters(self, params = {}):
@@ -116,10 +120,51 @@ class SC2Casts:
         liz.setProperty("IsPlayable","true")
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=liz)
 
+
     #------------------------------------- Show functions ------------------------------------- #
 
 
     def showTitles(self, params = {}):
+        get = params.get
+        url = get("url")
+
+        # Check if user want to search
+        if get("action") == 'showTitlesSearch':
+            keyboard = xbmc.Keyboard('')
+            keyboard.doModal()
+            url = 'http://sc2casts.com/?q='+keyboard.getText()
+        content = self.getRequest(url)
+
+        # Get settings
+        boolMatchup = bool(self.__settings__.getSetting( "matchup" ))
+        boolNr_games = bool(self.__settings__.getSetting( "nr_games" ))
+        boolEvent = bool(self.__settings__.getSetting( "event" ))
+        boolRound = bool(self.__settings__.getSetting( "round" ))
+        boolCaster = bool(self.__settings__.getSetting( "caster" ))
+
+        for cast in parser.casts(content):
+            # we can only show youtube videos
+            if cast['source'] != 'YouTube':
+                continue
+
+            description_fields = [ cast['name'] ]
+            # before
+            if boolMatchup:
+                description_fields.insert(0, cast['matchup'])
+            # after
+            if boolNr_games == 'true':
+                description_fields.append(cast['series']['desc'])
+            if boolEvent == 'true':
+                description_fields.append(cast['event']['name'])
+            if boolRound == 'true':
+                description_fields.append(cast['round'])
+            if boolCaster == 'true':
+                description_fields.append(', '.join(cast['casters']['names']))
+
+            self.addCategory(' | '.join(description_fields), cast['event']['path'], 'showGames')
+
+    '''
+    def showTitles_original(self, params = {}):
         get = params.get
         url = get("url")
 
@@ -181,142 +226,16 @@ class SC2Casts:
                 url += 'cast by: ' + caster[i]
 
             self.addCategory(url,title[i][0],'showGames')
-
-    '''
-    # calls self.addVideo('title', '')
-    def showGames_original(self, params = {}):
-        get = params.get
-        request = 'http://sc2casts.com'+get("url")
-        log('request = ' + request)
-        link = self.getRequest(request)
-        soup = BeautifulSoup(link)
-        #log('link = ' + link)
-        # find divs with id='g1', id='g2', etc
-        matchCount = re.compile('<div id="g(.+?)"(.+?)</div></div>').findall(link)
-        #matchLinks = [ e['src'] for e in soup.find_all('iframe') ]
-        matchLinks = [ e['src'] for e in soup.find_all('iframe') ]
-        log('matchCount = ' + str(matchCount))
-
-        youtubeLinksRe = re.compile('src="https?://www.youtube.com/embed/(.+?)"')
-
-        #if len(matchCount) > 0:
-        log('matchLinks = ' + str(len(matchLinks)))
-        if len(matchLinks) > 0:
-            #for i in range(len(matchCount)):
-            for i in range(len(matchLinks)):
-                #videoContent = youtubeLinksRe.findall(matchCount[i][1])
-                # this is really video number
-                #videoContent = youtubeLinksRe.findall(matchCount[i][1])
-                videoContent = str(i)
-                if len(videoContent) == 0:
-                    self.addVideo('Game '+ str(i+1), 'fillUp')
-                if len(videoContent) == 1:
-                    #self.addVideo('Game '+ str(i+1), videoContent[0])
-                    self.addVideo('Game '+ str(i+1), videoContent)
-                if len(videoContent) > 1:
-                    for k in range(len(videoContent)):
-                        self.addVideo('Game '+ str(i+1)+', part '+ str(k+1), videoContent[k])
-        else:
-            videoContent = youtubeLinksRe.findall(link)
-            log('videoContent = ' + str(videoContent))
-            if len(videoContent) > 1:
-                for n in range(len(videoContent)):
-                    self.addVideo('Game 1, part '+ str(n+1), videoContent[n])
-            else:
-                self.addVideo('Game 1', videoContent[0])
     '''
 
     def showGames(self, params = {}):
         get = params.get
         request = 'http://sc2casts.com'+get("url")
         content = self.getRequest(request)
-        games = self.parser(content)
+        games = self.parser.games(content)
 
         for game in games:
             self.addVideo(game['game_title'], game['game_id'])
-
-        '''
-        get = params.get
-        request = 'http://sc2casts.com'+get("url")
-        #log('request = ' + request)
-        link = self.getRequest(request)
-        soup = BeautifulSoup(link)
-        #log('link = ' + link)
-        # find divs with id='g1', id='g2', etc
-        #matchCount = re.compile('<div id="g(.+?)"(.+?)</div></div>').findall(link)
-        #matchLinks = [ e['src'] for e in soup.find_all('iframe') ]
-        matchLinks = [ e['src'] for e in soup.find_all('iframe') ]
-        #log('matchCount = ' + str(matchCount))
-
-        #youtubeLinksRe = re.compile('src="https?://www.youtube.com/embed/(.+?)"')
-
-        #gameDivs = soup.find_all(name='div', id=re.compile('g*'))
-        #gameDivs = soup.find_all(name='div', id=re.compile('^g*$'))
-        gameDivs = soup.find_all(name='div', id=re.compile('g.*'))
-        log('# gameDivs = ' + str(len(gameDivs)))
-
-        # if it's only 1 game
-        if len(gameDivs) == 0:
-            iframe = soup.find(id='ytplayer')
-            game_title = 'Game 1'
-            game_url = iframe['src']
-            game_id = game_url.rsplit('/', 1)[-1]
-
-            self.addVideo(game_title, game_id)
-
-        # if there's more than 1 game
-        for i, g in enumerate(gameDivs):
-            log('game div tag: ' + str(g))
-            #log(g.contents)
-
-            # if it doesn't have an iframe, game not played or casted
-            game_title = 'Game ' + str(i + 1)
-            if g.iframe:
-                log(g.iframe['src'])
-
-                game_url = g.iframe['src']
-                game_id = game_url.rsplit('/', 1)[-1]
-                log(game_id)
-
-                log('title, url, id = ' + game_title + ', ' + game_url + ', ' + game_id)
-                #break
-
-                self.addVideo(game_title, game_id)
-            else:
-                # TODO how to send an ui alert of something
-                log('Game not played or casted yet.')
-                game_id = ''
-                self.addVideo(game_title, game_id)
-        '''
-
-        '''
-        #if len(matchCount) > 0:
-        log('matchLinks = ' + str(len(matchLinks)))
-        if len(matchLinks) > 0:
-            #for i in range(len(matchCount)):
-            for i in range(len(matchLinks)):
-                #videoContent = youtubeLinksRe.findall(matchCount[i][1])
-                # this is really video number
-                #videoContent = youtubeLinksRe.findall(matchCount[i][1])
-                videoContent = str(i)
-                if len(videoContent) == 0:
-                    self.addVideo('Game '+ str(i+1), 'fillUp')
-                if len(videoContent) == 1:
-                    #self.addVideo('Game '+ str(i+1), videoContent[0])
-                    self.addVideo('Game '+ str(i+1), videoContent)
-                if len(videoContent) > 1:
-                    for k in range(len(videoContent)):
-                        self.addVideo('Game '+ str(i+1)+', part '+ str(k+1), videoContent[k])
-        else:
-            videoContent = youtubeLinksRe.findall(link)
-            log('videoContent = ' + str(videoContent))
-            if len(videoContent) > 1:
-                for n in range(len(videoContent)):
-                    self.addVideo('Game 1, part '+ str(n+1), videoContent[n])
-            else:
-                self.addVideo('Game 1', videoContent[0])
-        '''
-
 
 
     # ------------------------------------- Data functions ------------------------------------- #
