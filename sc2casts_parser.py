@@ -98,6 +98,7 @@ class SC2CastsParser:
     #     desc: string <human readable, e.g. Bof3 in 1 Video>,
     #   },
     #   matchup: string <can be none, e.g. for team matches>,
+    #   path: string,
     # },
     # ...
     # ]
@@ -106,27 +107,18 @@ class SC2CastsParser:
 
         soup = BeautifulSoup(html)
 
-        # there's no deeper structure, so we have to parse in order to get "today", "yesterday", etc
-        #print len(soup.select('div .content'))
-        #print soup.select('div .content').__class__
-        #print soup.select('div .content')[0].__class__
-        #print soup.select('div .content')[0]
+        # TODO there's no deeper structure, so we have to parse in order to get "today", "yesterday", etc
         content_div = soup.select('div .content')[0]
-        #content_div = soup.find_al
-        #content_div = soup.find_all('div .content')[0]
-        #print content_div.__class__
+        #self.log('content_div: ' + str(content_div))
         for div in content_div.find_all('div', recursive=False):
-            #print div
+            #self.log('\t' + 'div: ' + str(div))
 
             def is_section_header(div):
                 if not div.has_attr('class'):
-                    #print 'here'
                     return True
-                #print div['class']
-                #print 'latest_series' not in div['class']
                 return 'latest_series' not in div['class']
             if is_section_header(div):
-                #print 'continue:', div
+                self.log('\t' + 'is section header; skipping')
                 continue
 
             def name(div):
@@ -182,6 +174,8 @@ class SC2CastsParser:
                 if not div.span.string:
                     return ''
                 return div.span.string.replace('[', '').replace(']', '')
+            def path(div):
+                return div.h2.a['href']
 
             cast = {
                 'name': name(div),
@@ -192,10 +186,10 @@ class SC2CastsParser:
                 'casters': casters(div),
                 'series': series(div),
                 'matchup': matchup(div),
+                'path': path(div),
             }
-            print cast
-
-            break
+            self.log('\t' + 'adding: ' + str(cast))
+            results.append(cast)
 
         return results
 
@@ -210,19 +204,10 @@ class SC2CastsParser:
         results = [ ]
 
         soup = BeautifulSoup(game_page_html)
-        #log('link = ' + link)
-        # find divs with id='g1', id='g2', etc
-        #matchCount = re.compile('<div id="g(.+?)"(.+?)</div></div>').findall(link)
-        #matchLinks = [ e['src'] for e in soup.find_all('iframe') ]
         matchLinks = [ e['src'] for e in soup.find_all('iframe') ]
-        #log('matchCount = ' + str(matchCount))
-
-        #youtubeLinksRe = re.compile('src="https?://www.youtube.com/embed/(.+?)"')
-
-        #gameDivs = soup.find_all(name='div', id=re.compile('g*'))
-        #gameDivs = soup.find_all(name='div', id=re.compile('^g*$'))
+        self.log('matchLinks: ' + str(len(matchLinks)))
         gameDivs = soup.find_all(name='div', id=re.compile('g.*'))
-        self.log('# gameDivs = ' + str(len(gameDivs)))
+        self.log('gameDivs: ' + str(len(gameDivs)))
 
         # if it's only 1 game
         if len(gameDivs) == 0:
@@ -389,23 +374,39 @@ class SC2CastsParser:
 class SC2CastsClient:
 
     HOST = 'http://sc2casts.com'
+
+    PATH_INDEX = '/index.php'
     PATH_BROWSE = '/browse'
     PATH_ALL = '/all'
 
     parser = SC2CastsParser()
 
-    #@classmethod
-    def events(self):
-        html = requests.get(self.HOST + self.PATH_BROWSE).text
-        return self.parser.events(html)
+    @classmethod
+    def cast(cls, cast_path):
+        url = cls.HOST + cast_path
+        print(url)
+        html = requests.get(url).text
+        #print(html)
+        return cls.parser.games(html)
 
-    #@classmethod
-    def matchups(self):
-        html = requests.get(self.HOST + self.PATH_BROWSE).text
-        return self.parser.matchups(html)
+    @classmethod
+    def casts(cls):
+        html = requests.get(cls.HOST + cls.PATH_INDEX).text
+        #print(html)
+        return cls.parser.casts(html)
 
-    #@classmethod
-    def casters(self):
-        html = requests.get(self.HOST + self.PATH_BROWSE).text
-        return self.parser.casters(html)
+    @classmethod
+    def events(cls):
+        html = requests.get(cls.HOST + cls.PATH_BROWSE).text
+        return cls.parser.events(html)
+
+    @classmethod
+    def matchups(cls):
+        html = requests.get(cls.HOST + cls.PATH_BROWSE).text
+        return cls.parser.matchups(html)
+
+    @classmethod
+    def casters(cls):
+        html = requests.get(cls.HOST + cls.PATH_BROWSE).text
+        return cls.parser.casters(html)
 
