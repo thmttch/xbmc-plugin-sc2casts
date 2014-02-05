@@ -4,3 +4,6 @@ requests
 # testing
 pytest
 xbmcswift2
+
+# local
+-e /Users/matt/ww/sandbox/sc2castsclient

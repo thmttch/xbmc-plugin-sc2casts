@@ -34,8 +34,8 @@ def main_menu():
         'label': 'Top casts', 'path': plugin.url_for('recent_casts')
     }, {
         'label': 'Browse casts', 'path': plugin.url_for('recent_casts')
-    }, {
-        'label': 'Search casts', 'path': plugin.url_for('recent_casts')
+    #}, {
+        #'label': 'Search casts', 'path': plugin.url_for('recent_casts')
     } ]
 
 @plugin.route('/casts/recent')
