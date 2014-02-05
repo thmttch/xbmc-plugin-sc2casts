@@ -1,6 +1,7 @@
 #import sys, xbmc, xbmcplugin, xbmcaddon, sc2casts
 from xbmcswift2 import Plugin
-from sc2casts_parser import *
+#from sc2casts_parser import *
+from sc2castsclient import *
 
 '''
 __version__ = "0.4.4"
@@ -25,6 +26,7 @@ xbmcplugin.endOfDirectory(int(sys.argv[1]))
 '''
 
 plugin = Plugin()
+client = Sc2CastsClient()
 
 @plugin.route('/')
 def main_menu():
@@ -32,8 +34,8 @@ def main_menu():
         'label': 'Recent casts', 'path': plugin.url_for('recent_casts')
     }, {
         'label': 'Top casts', 'path': plugin.url_for('recent_casts')
-    }, {
-        'label': 'Browse casts', 'path': plugin.url_for('recent_casts')
+    #}, {
+        #'label': 'Browse casts', 'path': plugin.url_for('recent_casts')
     #}, {
         #'label': 'Search casts', 'path': plugin.url_for('recent_casts')
     } ]
@@ -46,43 +48,49 @@ def recent_casts():
     boolRound       = True
     boolCaster      = True
 
-    def build_label(cast):
-        description_fields = [ cast['name'] ]
+    def build_label(series):
+        description_fields = [ series.name ]
         # before
-        if boolMatchup and cast['matchup'] != '':
-            description_fields.insert(0, cast['matchup'])
+        if boolMatchup:
+            description_fields.insert(0, series.matchup.name)
         # after
         #if boolNr_games:
-            #description_fields.append(cast['series']['desc'])
+            #description_fields.append(series['series']['desc'])
         if boolEvent:
-            description_fields.append(cast['event']['name'])
+            description_fields.append(series.event.name)
         if boolRound:
-            description_fields.append(cast['round'])
+            description_fields.append(series.event_round)
         if boolCaster:
-            description_fields.append(', '.join(cast['casters']['names']))
+            description_fields.append(', '.join([ caster.name for caster in series.casters ]))
 
         return {
             'label': ' | '.join(description_fields),
-            'path': plugin.url_for('show_cast', cast_path=cast['path']),
+            'path': plugin.url_for('show_cast', cast_path=series.path),
         }
 
-    items = [ build_label(cast) for cast in SC2CastsClient.casts() if cast['source'] == 'YouTube' ]
+    items = [ build_label(series) for series in client.series() ]
     plugin.log.info('Found ' + str(len(items)) + ' casts')
     return items
 
 @plugin.route('/cast/<cast_path>')
 def show_cast(cast_path):
+    plugin.log.info('cast_path = ' + cast_path)
+
     def build_label(game):
         return {
-            'label': game['game_title'],
-            'path': plugin.url_for('show_youtube', youtube_id=game['game_id']),
-            # this means this link is a video rather than another entry in the heirarchy
+            #'label': game['game_title'],
+            'label': game.name,
+            #'path': plugin.url_for('show_youtube', youtube_id=game['game_id']),
+            'path': plugin.url_for('show_youtube', youtube_id=game.video_id),
+            # means this link is a video rather than another entry in the heirarchy
             'is_playable': True,
         }
 
-    return [
-        build_label(game) for game in SC2CastsClient.cast(cast_path)
-    ]
+    series = client.series_by_path(cast_path)
+    plugin.log.info('series = ' + repr(series))
+    result = [ build_label(game) for game in series.casts ]
+    plugin.log.info('result = ' + repr(result))
+    return result
 
 @plugin.route('/show_youtube/<youtube_id>')
 def show_youtube(youtube_id):
