@@ -148,7 +148,7 @@ class SC2Casts:
         boolRound = bool(self.__settings__.getSetting( "round" ))
         boolCaster = bool(self.__settings__.getSetting( "caster" ))
 
-        for cast in parser.casts(content):
+        for cast in self.parser.casts(content):
             # we can only show youtube videos
             if cast['source'] != 'YouTube':
                 continue
