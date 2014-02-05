@@ -12,7 +12,7 @@ import virtualenv
 
 from bs4 import BeautifulSoup
 #import requests as rr
-from sc2casts_parser import SC2CastsParser
+from sc2casts_parser import *
 
 def log(msg):
     print msg
