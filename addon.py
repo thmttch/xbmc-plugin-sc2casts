@@ -1,3 +1,7 @@
+activate_this = '/home/pvg/.xbmc/addons/plugin.video.sc2casts/venv/bin/activate_this.py'
+#activate_this = './venv/bin/activate_this.py'
+execfile(activate_this, dict(__file__=activate_this))
+
 #import sys, xbmc, xbmcplugin, xbmcaddon, sc2casts
 from xbmcswift2 import Plugin
 #from sc2casts_parser import *
@@ -90,6 +94,15 @@ def show_cast(cast_path):
     plugin.log.info('series = ' + repr(series))
     result = [ build_label(game) for game in series.casts ]
     plugin.log.info('result = ' + repr(result))
+
+    # add placeholders for unplayed games
+    for i in xrange(series.num_videos + 1, series.best_of + 1):
+        plugin.log.info(i)
+        result.append({
+            'label': 'Game ' + str(i),
+            'path': plugin.url_for('show_nogame')
+        })
+
     return result
 
 @plugin.route('/show_youtube/<youtube_id>')
@@ -97,6 +110,10 @@ def show_youtube(youtube_id):
     url = 'plugin://plugin.video.youtube/?action=play_video&videoid=%s' % youtube_id
     plugin.log.info('Playing url: %s' % url)
     plugin.set_resolved_url(url)
+
+@plugin.route('/show_nogame')
+def show_nogame():
+    plugin.notify('Game not played!')
 
 if __name__ == '__main__':
     plugin.run()
