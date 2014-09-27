@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+"""
 import re
 from bs4 import BeautifulSoup
 import requests
@@ -410,3 +411,4 @@ class SC2CastsClient:
         html = requests.get(cls.HOST + cls.PATH_BROWSE).text
         return cls.parser.casters(html)
 
+"""

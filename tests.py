@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-from sc2casts_parser import *
+#from sc2casts_parser import *
+from sc2castsclient import *
 import json
 from pprint import *
 
-parser = SC2CastsParser()
-client = SC2CastsClient()
+parser = Sc2CastsParser()
+client = Sc2CastsClient()
 TEST_DATA_DIR = 'tests'
 
 # test cases:
@@ -20,7 +21,8 @@ def test_casts():
         test_data = f.read()
         #print test_data
 
-    actual = parser.casts(test_data)
+    #actual = parser.casts(test_data)
+    actual = parser._parse_index(test_data)
     pprint(actual)
 
     # TODO check each cast
@@ -36,7 +38,8 @@ def test_games_bo3_in_1_game():
         test_data = f.read()
         #print test_data
 
-    actual = parser.games(test_data)
+    #actual = parser.games(test_data)
+    actual = parser._parse_series_page(test_data)
 
     assert len(actual) == 1
 
@@ -49,7 +52,8 @@ def test_games_5_games():
         test_data = f.read()
         #print test_data
 
-    actual = parser.games(test_data)
+    #actual = parser.games(test_data)
+    actual = parser._parse_series_page(test_data)
 
     print actual
     assert len(actual) == 5

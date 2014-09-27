@@ -6,4 +6,4 @@ pytest
 xbmcswift2
 
 # local
--e /Users/matt/ww/sandbox/sc2castsclient
+-e /Users/matt/ww/sc2castsclient

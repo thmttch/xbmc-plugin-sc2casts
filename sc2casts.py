@@ -1,3 +1,4 @@
+"""
 #activate_this = xbmc.translatePath('./venv/bin/activate_this.py')
 #activate_this = xbmc.translatePath('~/.xbmc/addons/plugin.video.sc2casts/venv/bin/activate_this.py')
 #activate_this = xbmc.translatePath('/home/pvg/.xbmc/addons/plugin.video.sc2casts/venv/bin/activate_this.py')
@@ -269,3 +270,4 @@ class SC2Casts:
         link=response.read()
         response.close()
         return link
+"""
