@@ -37,9 +37,9 @@ def main_menu():
     return [ {
         'label': 'Recent casts', 'path': plugin.url_for('recent_casts')
     }, {
-        'label': 'Top casts', 'path': plugin.url_for('recent_casts')
-    }, {
-        'label': 'Browse casts', 'path': plugin.url_for('recent_casts')
+        'label': 'Top casts (Today)', 'path': plugin.url_for('recent_casts')
+    #}, {
+        #'label': 'Browse casts', 'path': plugin.url_for('recent_casts')
     #}, {
         #'label': 'Search casts', 'path': plugin.url_for('recent_casts')
     } ]
@@ -53,27 +53,32 @@ def recent_casts():
     boolCaster      = True
 
     def build_label(cast):
-        description_fields = [ cast['name'] ]
+        description_fields = [ cast.name ]
         # before
-        if boolMatchup and cast['matchup'] != '':
-            description_fields.insert(0, cast['matchup'])
+        if boolMatchup and cast.matchup != '':
+            description_fields.insert(0, cast.matchup.name)
         # after
         #if boolNr_games:
             #description_fields.append(cast['series']['desc'])
         if boolEvent:
-            description_fields.append(cast['event']['name'])
+            #description_fields.append(cast['event']['name'])
+            description_fields.append(cast.event.name)
         if boolRound:
-            description_fields.append(cast['round'])
+            #description_fields.append(cast['round'])
+            description_fields.append(cast.event_round)
         if boolCaster:
-            description_fields.append(', '.join(cast['casters']['names']))
+            #description_fields.append(', '.join(cast['casters']['names']))
+            description_fields.append(', '.join([ caster.name for caster in cast.casters ]))
+
+        print description_fields
 
         return {
             'label': ' | '.join(description_fields),
-            'path': plugin.url_for('show_cast', cast_path=cast['path']),
+            'path': plugin.url_for('show_cast', cast_path=cast.path),
         }
 
     #items = [ build_label(cast) for cast in SC2CastsClient.casts() if cast['source'] == 'YouTube' ]
-    items = [ build_label(cast) for cast in client.series() if cast['source'] == 'YouTube' ]
+    items = [ build_label(series) for series in client.series() if series.source == 'YouTube' ]
     plugin.log.info('Found ' + str(len(items)) + ' casts')
     return items
 

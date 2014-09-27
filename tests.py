@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+'''
+
 #from sc2casts_parser import *
 from sc2castsclient import *
 import json
@@ -107,3 +109,5 @@ def test_matchups():
 def test_client_matchups():
     actual = client.matchups()
     assert len(actual) == 6
+
+'''
