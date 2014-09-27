@@ -67,7 +67,7 @@ def recent_casts():
         }
 
     #items = [ build_label(cast) for cast in SC2CastsClient.casts() if cast['source'] == 'YouTube' ]
-    items = [ build_label(cast) for cast in SC2CastsClient.series() if cast['source'] == 'YouTube' ]
+    items = [ build_label(cast) for cast in Sc2CastsClient.series() if cast['source'] == 'YouTube' ]
     plugin.log.info('Found ' + str(len(items)) + ' casts')
     return items
 
@@ -82,7 +82,7 @@ def show_cast(cast_path):
         }
 
     return [
-        build_label(game) for game in SC2CastsClient.cast(cast_path)
+        build_label(game) for game in Sc2CastsClient.cast(cast_path)
     ]
 
 @plugin.route('/show_youtube/<youtube_id>')
