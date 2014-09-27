@@ -1,3 +1,7 @@
+activate_this = '/home/pvg/.xbmc/addons/plugin.video.sc2casts/venv/bin/activate_this.py'
+#activate_this = './venv/bin/activate_this.py'
+execfile(activate_this, dict(__file__=activate_this))
+
 #import sys, xbmc, xbmcplugin, xbmcaddon, sc2casts
 from xbmcswift2 import Plugin
 #from sc2casts_parser import *
