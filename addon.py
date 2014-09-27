@@ -74,11 +74,12 @@ def recent_casts():
 
         return {
             'label': ' | '.join(description_fields),
-            'path': plugin.url_for('show_cast', cast_path=cast.path),
+            # note: strip off the leading slash; it'll get url-encoded
+            'path': plugin.url_for('show_cast', cast_path=cast.path[1:]),
         }
 
     #items = [ build_label(cast) for cast in SC2CastsClient.casts() if cast['source'] == 'YouTube' ]
-    items = [ build_label(series) for series in client.series() if series.source == 'YouTube' ]
+    items = [ build_label(series) for series in client.series('recent') if series.source == 'YouTube' ]
     plugin.log.info('Found ' + str(len(items)) + ' casts')
     return items
 
@@ -86,15 +87,17 @@ def recent_casts():
 def show_cast(cast_path):
     def build_label(game):
         return {
-            'label': game['game_title'],
-            'path': plugin.url_for('show_youtube', youtube_id=game['game_id']),
+            #'label': game['game_title'],
+            'label': game.name,
+            #'path': plugin.url_for('show_youtube', youtube_id=game['game_id']),
+            'path': plugin.url_for('show_youtube', youtube_id=game.video_id),
             # this means this link is a video rather than another entry in the heirarchy
             'is_playable': True,
         }
 
     return [
         #build_label(game) for game in Sc2CastsClient.cast(cast_path)
-        build_label(game) for game in client.cast(cast_path)
+        build_label(game) for game in client.series_by_path('/' + cast_path).casts
     ]
 
 @plugin.route('/show_youtube/<youtube_id>')

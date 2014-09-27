@@ -30,9 +30,7 @@ def test_recent_casts():
 
     assert len(actual) > 0
 
-'''
 def test_show_casts():
-    actual = client.series()
+    actual = show_cast('cast16700-WelMu-vs-Ryung-Best-of-3-DreamHack-Stockholm-2014-Group-Stage-3')
 
     assert len(actual) > 0
-'''
