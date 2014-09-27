@@ -1,6 +1,7 @@
 #import sys, xbmc, xbmcplugin, xbmcaddon, sc2casts
 from xbmcswift2 import Plugin
-from sc2casts_parser import *
+#from sc2casts_parser import *
+from sc2castsclient import *
 
 '''
 __version__ = "0.4.4"
@@ -25,6 +26,7 @@ xbmcplugin.endOfDirectory(int(sys.argv[1]))
 '''
 
 plugin = Plugin()
+client = Sc2CastsClient()
 
 @plugin.route('/')
 def main_menu():
@@ -67,7 +69,7 @@ def recent_casts():
         }
 
     #items = [ build_label(cast) for cast in SC2CastsClient.casts() if cast['source'] == 'YouTube' ]
-    items = [ build_label(cast) for cast in Sc2CastsClient.series() if cast['source'] == 'YouTube' ]
+    items = [ build_label(cast) for cast in client.series() if cast['source'] == 'YouTube' ]
     plugin.log.info('Found ' + str(len(items)) + ' casts')
     return items
 
@@ -82,7 +84,8 @@ def show_cast(cast_path):
         }
 
     return [
-        build_label(game) for game in Sc2CastsClient.cast(cast_path)
+        #build_label(game) for game in Sc2CastsClient.cast(cast_path)
+        build_label(game) for game in client.cast(cast_path)
     ]
 
 @plugin.route('/show_youtube/<youtube_id>')
