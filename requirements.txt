@@ -3,6 +3,7 @@ requests
 
 # testing
 pytest
+nose
 xbmcswift2
 
 # local
