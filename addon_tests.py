@@ -16,21 +16,15 @@ from pprint import *
 # test cases:
 
 def test_menu():
-    actual = main_menu()
-
-    pprint(actual)
-
-    assert len(actual) == 2
-
+    actual = len(main_menu())
+    expected = 5
+    assert actual == expected, 'Expected {} items, but got {}'.format(expected, actual)
 
 def test_recent_casts():
-    actual = recent_casts()
-
-    pprint(actual)
-
-    assert len(actual) > 0
+    actual = len(recent_casts())
+    assert actual > 0, 'Expected > 0 items, but got {}'.format(actual)
 
 def test_show_casts():
-    actual = show_cast('cast16700-WelMu-vs-Ryung-Best-of-3-DreamHack-Stockholm-2014-Group-Stage-3')
-
-    assert len(actual) > 0
+    actual = len(show_cast('cast16700-WelMu-vs-Ryung-Best-of-3-DreamHack-Stockholm-2014-Group-Stage-3'))
+    expected = 3
+    assert actual == expected, 'Expected {} games, but got {}'.format(expected, actual)

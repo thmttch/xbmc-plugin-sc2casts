@@ -3,10 +3,12 @@ Whats This?
 
 A plugin to watch videos from SC2Casts using XBMC
 
+```bash
+$> py.test addon_tests.py
+$> py.test -s addon_tests.py
 ```
-py.test addon_tests.py
-py.test -s addon_tests.py
-```
+
+<https://xbmcswift2.readthedocs.org/en/latest/>
 
 Installation
 ============
